@@ -10,12 +10,12 @@
 
 
 extern char *optarg;
+extern int optind;
 
 char *help="\
-Usage: syn [OPTION] -a [destination_ip:destination_port]\n\
+Usage: syn [OPTION] destination_ip:destination_port\n\
   -h                                    Show the help infomation.\n\
   -d                                    Open the debug model.\n\
-  -a [destination_ip:destination_port]  The target you need to attack.\n\
   -i [source_ip]                        Set the source ip.\n\
                                           Default random IP.\n\
   -p [source_port]                      Set the source port.\n\
@@ -26,6 +26,9 @@ Usage: syn [OPTION] -a [destination_ip:destination_port]\n\
                                           -i and -p argument.\n\
   -l [thread_number]                    Set the thread number.\n\
                                           The max thread number is %d\n\
+\n\
+For example:\n\
+  syn 192.168.1.1:80\n\
 \n\
 If you have some problems, welcome to website < www.eonew.cn > to contact author.\n\
 The software is only used for test, please do not use illegally.\n\
@@ -69,7 +72,7 @@ int main(int argc, char *argv[])
 
     thread_arg arg={0};
     int opt;
-    while((opt=getopt(argc,argv,"ha:di:p:t:fl:"))!=-1)
+    while((opt=getopt(argc,argv,"h:di:p:t:fl:"))!=-1)
     {
         char buf[0x20]={0};
         switch(opt)
@@ -77,16 +80,6 @@ int main(int argc, char *argv[])
             case 'h':
                 printf(help,MAXCHILD);
                 return 0;
-            case 'a':
-                arg_a=1;
-                strncpy(buf,optarg,0x20);
-                char *t=strchr(buf,':');
-                *t=0;
-
-                strncpy(dst_ip,buf,0x20);
-                dst_port=atoi(t+1);
-                
-                break; 
             case 'd':
                 arg_d=1;
                 break;
@@ -116,11 +109,24 @@ int main(int argc, char *argv[])
         }
     }
 
+    if(optind<argc)
+    {
+        char buf[0x20]={0};
+        strncpy(buf,argv[optind],0x20);
+        char *t=strchr(buf,':');
+        *t=0;
+
+        strncpy(dst_ip,buf,0x20);
+        dst_port=atoi(t+1);
+
+        arg_a=1;
+    }
+    
     
     arg.model=MODEL_NORMAL;
     if(arg_a==0)
     {
-        fprintf(stderr,"Error: Don't have -a argument! Enter -h for help\n");
+        fprintf(stderr,"Error: Don't have target! Enter -h for help\n");
         exit(1);
     }
     else if(arg_d==1&&arg_f==1)
