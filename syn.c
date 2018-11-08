@@ -239,7 +239,7 @@ void *send_synflood(void *arg)
 			pthread_mutex_unlock(_arg->mutex);
 			buf.tcp.sum = 0;
 
-			if(_arg->source_ip[0]=0)
+			if(_arg->source_ip[0]==0)
 			{
 				buf._ip.sourceIP = rand();
 			}
